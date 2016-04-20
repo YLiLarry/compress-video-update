@@ -1,0 +1,49 @@
+name:                compress-videos-update
+version:             0.1.0.0
+synopsis:            Initial project template from stack
+description:         Please see README.md
+homepage:            https://github.com/githubuser/compress-videos-update#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Author name here
+maintainer:          example@example.com
+copyright:           2016 Author name here
+category:            Web
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     VC.Update
+  build-depends:       base >= 4.7 && < 5
+  default-language:    Haskell2010
+  build-depends:       http-conduit
+                     , transformers
+                     , text
+                     , bytestring
+                     , directory
+                     , containers
+
+executable compress-videos-update-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , compress-videos-update
+  default-language:    Haskell2010
+
+test-suite compress-videos-update-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , compress-videos-update
+                     , hspec
+                     , directory
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/compress-videos-update
