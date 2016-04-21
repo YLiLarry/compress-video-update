@@ -14,6 +14,6 @@ main :: IO ()
 main = hspec $ do
    describe "first" $ do
       it "" $ do
-         print =<< runReaderT serverLocalDiff testURLConfig
+         print =<< runReaderT updateAll testURLConfig
          
 
