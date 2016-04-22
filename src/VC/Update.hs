@@ -12,27 +12,34 @@ import Control.Monad
 -- import Data.List
 import Data.Monoid
 import Data.String
-import Control.Monad.Trans.Reader
-import Control.Monad.IO.Class
-import Data.ByteString.Lazy (ByteString)
-import           Data.Set (Set)
-import qualified Data.Set as S ((\\), union, fromList, map)
 import System.IO
+import Control.Monad.Trans.Reader
+import Control.Monad.Trans.Class
+import Control.Monad.IO.Class
+import           Data.ByteString.Lazy (ByteString)
+import qualified Data.ByteString.Lazy as B
+import           Data.Set (Set)
+import qualified Data.Set as S
+import VC.Update.Types
 
-data URLConfig = URLConfig {
-     serverConfigFingerprintURL :: String
-   , serverConfigDirectoryURL :: String
-   , localConfigDirectoryURL :: String
-}
+writeLog :: MonadIO m => String -> m ()
+writeLog str = liftIO $ hPutStrLn stderr str
 
-type ConfigName = FilePath
+requestSettings :: String -> ReaderT EnvCfg IO Request
+requestSettings url = settings <$> ask
+   where settings cfg =
+            setRequestMethod "POST" $
+            setRequestQueryString [("activation", Just $ fromString $ activation cfg)] $
+            fromString url                      
 
-serverConfigFingerprints :: ReaderT URLConfig IO [(ConfigName, String)]
+serverConfigFingerprints :: ReaderT EnvCfg IO [(ConfigName, String)]
 serverConfigFingerprints = do
-   request <- fromString <$> serverConfigFingerprintURL <$> ask
+   url <- serverConfigFingerprintURL <$> ask
+   request <- requestSettings url
+   writeLog $ "Retrive fingerprints from " ++ url
    getResponseBody <$> httpJSON request
 
-localConfigFingerprints :: ReaderT URLConfig IO [(ConfigName, String)]
+localConfigFingerprints :: ReaderT EnvCfg IO [(ConfigName, String)]
 localConfigFingerprints = do   
    path <- localConfigDirectoryURL <$> ask
    files <- liftIO $ getDirectoryContents path
@@ -42,26 +49,30 @@ localConfigFingerprints = do
          p <- liftIO $ show <$> getFileHash (p ++ f)
          return (f, p)         
 
-serverLocalDiff :: ReaderT URLConfig IO (Set ConfigName, Set ConfigName)
+serverLocalDiff :: ReaderT EnvCfg IO (Set ConfigName, Set ConfigName)
 serverLocalDiff = do
-   server <- S.fromList . map fst <$> serverConfigFingerprints
-   local  <- S.fromList . map fst <$> localConfigFingerprints
+   server <- S.fromList <$> serverConfigFingerprints
+   local  <- S.fromList <$> localConfigFingerprints
    let u = S.union server local
-   return (u S.\\ server, u S.\\ local)
+   return (S.map fst $ u S.\\ server, S.map fst $ u S.\\ local)
 
-downloadServerConfig :: ConfigName -> ReaderT URLConfig IO ByteString
+downloadServerConfig :: ConfigName -> ReaderT EnvCfg IO ()
 downloadServerConfig target = do
-   file <- mappend <$> (serverConfigDirectoryURL <$> ask) <*> return target
+   upstream <- mappend <$> (serverConfigDirectoryURL <$> ask) <*> return target
+   local <- mappend <$> (localConfigDirectoryURL <$> ask) <*> return target
+   request <- requestSettings upstream
    liftIO $ do
-      hPutStrLn stderr $ "Downloading " ++ file
-      getResponseBody <$> httpLBS (fromString file)
+      writeLog $ "Downloading " ++ upstream
+      content <- getResponseBody <$> httpLBS request
+      writeLog $ "Saved to " ++ local
+      B.writeFile local content
 
-deleteLocalConfig :: ConfigName -> ReaderT URLConfig IO ()
+deleteLocalConfig :: ConfigName -> ReaderT EnvCfg IO ()
 deleteLocalConfig target = do
    base <- localConfigDirectoryURL <$> ask
    liftIO $ removeFile (base ++ target)
 
-updateAll :: ReaderT URLConfig IO ()
+updateAll :: ReaderT EnvCfg IO ()
 updateAll = do
    (toDelete, toDownload) <- serverLocalDiff 
    mapM_ deleteLocalConfig toDelete
