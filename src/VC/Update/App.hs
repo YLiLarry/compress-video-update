@@ -7,14 +7,16 @@ appNeedsUpdate :: VCUpdate Bool
 appNeedsUpdate = do
    v <- version <$> get
    url <- serverReleaseVersionURL <$> get
-   v' <- requestLBS url []
-   liftIO $ writeLog $ printf "Application needs an update:\n  Current: %s\n  Server:  %s" (show v) (show v')
+   v' <- requestS url []
+   liftIO $ writeLog $ printf "Application needs an update:\n  Current: %s\n  Server:  %s" v v'
    return (fromString v == v')
    
 appUpdate :: VCUpdate ()
 appUpdate = do
+   vurl <- serverReleaseVersionURL <$> get
+   version' <- requestS vurl []
    appDir' <- appDir <$> get
-   writeLog "Download release.zip from the server"
+   writeLog $ printf "Download release.zip (%s) from the server" version'
    url <- serverReleaseDownloadURL <$> get
    zip <- requestLBS url []
    -- writeLog $ printf "Clean old app in %s" appDir'
@@ -22,4 +24,7 @@ appUpdate = do
    liftIO $ createDirectoryIfMissing True appDir'
    writeLog $ printf "Unzip to %s" appDir'
    liftIO $ extractFilesFromArchive [OptDestination appDir', OptVerbose] $ toArchive zip
+   writeLog $ printf "Update the version number to %s" version'
+   modify (\e -> e {version = version'}) 
+   writeLog $ printf "Update succeeded."
    

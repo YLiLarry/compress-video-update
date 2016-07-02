@@ -7,6 +7,8 @@ resolver: lts-6.5
 # Local packages, usually specified by relative directory name
 packages:
 - '.'
+- './submodule/data-to-json-file'
+
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps: []
 

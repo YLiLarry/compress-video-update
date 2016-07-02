@@ -30,6 +30,7 @@ library
                      , aeson
                      , zip-archive
                      , extra
+                     , data-to-json-file
 
 executable compress-videos-update-exe
   hs-source-dirs:      app
@@ -43,6 +44,9 @@ test-suite compress-videos-update-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
+  other-modules:       Test.App
+                       Test.Env
+                       Test.Preset
   build-depends:       base
                      , compress-videos-update
                      , hspec
