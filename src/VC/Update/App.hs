@@ -26,5 +26,6 @@ appUpdate = do
    liftIO $ extractFilesFromArchive [OptDestination appDir', OptVerbose] $ toArchive zip
    writeLog $ printf "Update the version number to %s" version'
    modify (\e -> e {version = version'}) 
+   saveEnvCfg
    writeLog $ printf "Update succeeded."
    

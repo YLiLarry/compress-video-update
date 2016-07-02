@@ -13,4 +13,5 @@ testEnvCfg = EnvCfg {
    , appDir = "./test/tmp/app/"
    , version = "current"
    , activation = "test"
+   , envCfg = "./test/env.cfg"
 }
