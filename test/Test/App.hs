@@ -14,5 +14,8 @@ test = hspec $ do
       it "appNeedsUpdate" $ do
          b <- runVCUpdate appNeedsUpdate testEnvCfg
          b `shouldBe` False
+      it "appUpdate" $ do
+         runVCUpdate appUpdate testEnvCfg
+      
          
          

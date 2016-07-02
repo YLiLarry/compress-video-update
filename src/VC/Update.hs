@@ -12,9 +12,6 @@ import           Data.Set (Set)
 import qualified Data.Set as S
 
 
-writeLog :: MonadIO m => String -> m ()
-writeLog str = liftIO $ hPutStrLn stderr str                
-
 serverConfigFingerprints :: VCUpdate [(FilePath, String)]
 serverConfigFingerprints = do
    url <- serverConfigFingerprintURL <$> get

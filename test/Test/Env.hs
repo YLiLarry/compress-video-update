@@ -8,7 +8,9 @@ testEnvCfg = EnvCfg {
      serverConfigFingerprintURL = "http://localhost:8000/api/config/fingerprints"
    , serverConfigDirectoryURL   = "http://localhost:8000/api/config/"
    , serverReleaseVersionURL    = "http://localhost:8000/api/release/version"
-   , localConfigDirectoryURL    = "./test/tmp/"
+   , serverReleaseDownloadURL    = "http://localhost:8000/api/release/download"
+   , localConfigDirectoryURL    = "./test/tmp/cfgs/"
+   , appDir = "./test/tmp/app/"
    , version = "current"
    , activation = "test"
 }

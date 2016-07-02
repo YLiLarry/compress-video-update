@@ -16,7 +16,9 @@ data EnvCfg = EnvCfg {
      serverConfigFingerprintURL :: String
    , serverConfigDirectoryURL :: String
    , serverReleaseVersionURL :: String
+   , serverReleaseDownloadURL :: String
    , localConfigDirectoryURL :: String
+   , appDir :: FilePath
    , version :: String
    , activation :: String
 }
@@ -56,3 +58,6 @@ requestJSON url inputs = do
    req <- request url inputs
    getResponseBody <$> httpJSON req
    
+
+writeLog :: MonadIO m => String -> m ()
+writeLog str = liftIO $ hPutStrLn stderr str                

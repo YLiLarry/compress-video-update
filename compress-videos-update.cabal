@@ -28,6 +28,8 @@ library
                      , directory
                      , containers
                      , aeson
+                     , zip-archive
+                     , extra
 
 executable compress-videos-update-exe
   hs-source-dirs:      app
