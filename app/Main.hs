@@ -22,8 +22,7 @@ main = O.runCommand $ \opts configPath -> do
 checkOnly :: VCUpdate ()
 checkOnly = do
    writeLog "Only check if an update is needed."
-   ifM appNeedsUpdate 
-      (liftIO $ exitWith $ ExitFailure 1)
+   unlessM appNeedsUpdate 
       (writeLog "Application is up-to-date.")
       
 update :: VCUpdate ()
