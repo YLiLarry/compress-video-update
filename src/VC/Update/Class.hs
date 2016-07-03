@@ -13,6 +13,7 @@ import qualified Data.ByteString as S
 import qualified Network.HTTP.Simple as N
 import Data.Aeson (FromJSON)
 import Data.SL
+import Options
 
 data EnvCfg = EnvCfg {
      serverConfigFingerprintURL :: String
@@ -24,17 +25,39 @@ data EnvCfg = EnvCfg {
    , version :: String
    , activation :: String
    , envCfg :: FilePath
+   , mainOptions :: MainOptions
+   , appName :: String
+} deriving (Generic)
+
+
+data MainOptions = MainOptions {
+   optCheckOnly :: Bool,
+   optKillThread :: Maybe Int,
+   optLaunchApp :: Bool
 } deriving (Generic)
 
 instance ToJSON EnvCfg
 instance FromJSON EnvCfg
 instance SL EnvCfg
 
+instance ToJSON MainOptions
+instance FromJSON MainOptions
+instance SL MainOptions
+
+instance Options MainOptions where
+   defineOptions = 
+      pure MainOptions
+        <*> simpleOption "check-only" False
+            "Check if an update is needed. Exit with 0 if not."
+        <*> simpleOption "kill-thread" Nothing
+            "Kill thread # in order to update."
+        <*> simpleOption "launch-app" False
+            "Launch the app after update."
+            
 saveEnvCfg :: VCUpdate ()
 saveEnvCfg = do
    env <- get 
    save env $ envCfg env
-   
 
 newtype VCUpdate v = VCUpdate {
    unVCUpdate :: StateT EnvCfg IO v
@@ -71,11 +94,6 @@ requestJSON :: (FromJSON x) => String -> [(S.ByteString, S.ByteString)] -> VCUpd
 requestJSON url inputs = do 
    req <- request url inputs
    getResponseBody <$> httpJSON req
-   
-
-writeLog :: MonadIO m => String -> m ()
-writeLog str = liftIO $ hPutStrLn stderr str                
-
 
 instance PrintfArg L.ByteString where
    formatArg = formatArg . L.unpack

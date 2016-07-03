@@ -8,8 +8,9 @@ appNeedsUpdate = do
    v <- version <$> get
    url <- serverReleaseVersionURL <$> get
    v' <- requestS url []
-   liftIO $ writeLog $ printf "Application needs an update:\n  Current: %s\n  Server:  %s" v v'
-   return (fromString v == v')
+   let bool = fromString v /= v'
+   when bool $ writeLog $ printf "Application needs an update:\n  Current: %s\n  Server:  %s" v v'
+   return bool
    
 appUpdate :: VCUpdate ()
 appUpdate = do
