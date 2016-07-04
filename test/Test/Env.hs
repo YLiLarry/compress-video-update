@@ -14,7 +14,8 @@ testEnvCfg = EnvCfg {
    , appDir = "./test/tmp/app/"
    , appName = "compress-video"
    , version = "current"
-   , activation = "test"
+   , licenseFile = "./test/LICENSE"
+   , license = Just "test"
    , envCfg = "./test/env.cfg"
    , mainOptions = defaultOptions
 }

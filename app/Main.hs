@@ -12,8 +12,10 @@ import Options as O
 main :: IO ()
 main = O.runCommand $ \opts configPath -> do 
    env' <- load $ head configPath
+   license' <- readFile $ licenseFile env'
    let env = env' {
-      mainOptions = opts
+      mainOptions = opts,
+      license = Just license'
    }
    flip runVCUpdate env $
       if | optCheckOnly opts -> checkOnly

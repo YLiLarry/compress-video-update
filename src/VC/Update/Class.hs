@@ -23,7 +23,8 @@ data EnvCfg = EnvCfg {
    , localConfigDirectoryURL :: String
    , appDir :: FilePath
    , version :: String
-   , activation :: String
+   , licenseFile :: FilePath
+   , license :: Maybe String
    , envCfg :: FilePath
    , mainOptions :: MainOptions
    , appName :: String
@@ -75,11 +76,11 @@ deriving instance MonadState EnvCfg VCUpdate
 
 request :: String -> [(S.ByteString, S.ByteString)] -> VCUpdate Request
 request url inputs = do
-   code <- activation <$> get
+   code <- license <$> get
    return
       $ setRequestBodyURLEncoded inputs
       $ setRequestMethod "POST"
-      $ setRequestQueryString [("activation", Just $ fromString code)]
+      $ setRequestQueryString [("activation", fromString <$> code)]
       $ fromString url
       
 requestLBS :: String -> [(S.ByteString, S.ByteString)] -> VCUpdate L.ByteString
