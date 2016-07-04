@@ -6,16 +6,16 @@ import Options
 
 testEnvCfg :: EnvCfg
 testEnvCfg = EnvCfg {
-     serverConfigFingerprintURL = "http://localhost:8000/api/config/fingerprints"
-   , serverConfigDirectoryURL   = "http://localhost:8000/api/config/"
-   , serverReleaseVersionURL    = "http://localhost:8000/api/release/version"
-   , serverReleaseDownloadURL    = "http://localhost:8000/api/release/download"
-   , localConfigDirectoryURL    = "./test/tmp/cfgs/"
-   , appDir = "./test/tmp/app/"
-   , appName = "compress-video"
-   , version = "current"
+     presetFingerprintURL  = "http://localhost:8000/api/config/fingerprints"
+   , presetCollectionURL   = "http://localhost:8000/api/config/"
+   , releaseVersionURL     = "http://localhost:8000/api/release/version"
+   , releaseDownloadURL    = "http://localhost:8000/api/release/download"
+   , presetDir = "./test/tmp/cfgs/"
+   , downloadDir = "./test/tmp/app/"
+   , installer = "compress-video"
    , licenseFile = "./test/LICENSE"
    , license = Just "test"
-   , envCfg = "./test/env.cfg"
-   , mainOptions = defaultOptions
+   , version = "current"
+   , selfName = Nothing
+   , mainOptions = Just defaultOptions
 }

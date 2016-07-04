@@ -14,13 +14,13 @@ import qualified Data.Set as S
 
 serverConfigFingerprints :: VCUpdate [(FilePath, String)]
 serverConfigFingerprints = do
-   url <- serverConfigFingerprintURL <$> get
+   url <- (# presetFingerprintURL) <$> get
    writeLog $ "Retrive fingerprints from " ++ url
    requestJSON url []
 
 localConfigFingerprints :: VCUpdate [(FilePath, String)]
 localConfigFingerprints = do   
-   path <- localConfigDirectoryURL <$> get
+   path <- (# presetDir) <$> get
    files <- liftIO $ getDirectoryContents path
    sequence [ make path f | f <- files, notElem f [".", ".."] ]
       where
@@ -37,8 +37,8 @@ serverLocalDiff = do
 
 downloadServerConfig :: FilePath -> VCUpdate ()
 downloadServerConfig target = do
-   upstream <- mappend <$> (serverConfigDirectoryURL <$> get) <*> return target
-   local <- mappend <$> (localConfigDirectoryURL <$> get) <*> return target
+   upstream <- mappend <$> ((# presetCollectionURL) <$> get) <*> return target
+   local <- mappend <$> ((# presetDir) <$> get) <*> return target
    writeLog $ "Downloading " ++ upstream
    content <- requestLBS upstream []
    writeLog $ "Saved to " ++ local
@@ -46,7 +46,7 @@ downloadServerConfig target = do
 
 deleteLocalConfig :: FilePath -> VCUpdate ()
 deleteLocalConfig target = do
-   base <- localConfigDirectoryURL <$> get
+   base <- (# presetDir) <$> get
    liftIO $ removeFile (base ++ target)
 
 updateAll :: VCUpdate ()

@@ -25,6 +25,7 @@ library
                      , mtl
                      , text
                      , bytestring
+                     , easy-file
                      , directory
                      , containers
                      , aeson
@@ -56,6 +57,7 @@ test-suite compress-video-update-test
   build-depends:       base
                      , compress-video-update
                      , hspec
+                     , easy-file
                      , directory
                      , mtl
                      , options

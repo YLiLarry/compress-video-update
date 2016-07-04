@@ -1,6 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
@@ -16,25 +17,35 @@ import Data.SL
 import Options
 
 data EnvCfg = EnvCfg {
-     serverConfigFingerprintURL :: String
-   , serverConfigDirectoryURL :: String
-   , serverReleaseVersionURL :: String
-   , serverReleaseDownloadURL :: String
-   , localConfigDirectoryURL :: String
-   , appDir :: FilePath
-   , version :: String
+     presetFingerprintURL :: String
+   , presetCollectionURL :: String
+   , releaseVersionURL :: String
+   , releaseDownloadURL :: String
+   , presetDir :: String
+   , installer :: String
+   , downloadDir :: FilePath
    , licenseFile :: FilePath
+   , version :: String
    , license :: Maybe String
-   , envCfg :: FilePath
-   , mainOptions :: MainOptions
-   , appName :: String
+   , selfName :: Maybe String
+   , mainOptions :: Maybe MainOptions
 } deriving (Generic)
 
+class MaybeData a
+class (MaybeData a) => Selector a f c where
+   (#) :: a -> f -> c
+   (?) :: f -> a -> c
+   (?) = flip (#)
+   
+instance (MaybeData a) => Selector a (a -> Maybe b) b where
+   a # f = fromJust $ f a
+instance (MaybeData a) => Selector a (a -> b) b where
+   a # f = f a
+instance MaybeData EnvCfg
 
 data MainOptions = MainOptions {
    optCheckOnly :: Bool,
-   optKillThread :: Maybe Int,
-   optLaunchApp :: Bool
+   optKillProcess :: Maybe String
 } deriving (Generic)
 
 instance ToJSON EnvCfg
@@ -52,14 +63,7 @@ instance Options MainOptions where
             "Check if an update is needed. Exit with 0 if not."
         <*> simpleOption "kill-thread" Nothing
             "Kill thread # in order to update."
-        <*> simpleOption "launch-app" False
-            "Launch the app after update."
             
-saveEnvCfg :: VCUpdate ()
-saveEnvCfg = do
-   env <- get 
-   save env $ envCfg env
-
 newtype VCUpdate v = VCUpdate {
    unVCUpdate :: StateT EnvCfg IO v
 }
