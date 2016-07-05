@@ -17,7 +17,6 @@ import Control.Monad.Extra as X
 import Data.Maybe as X
 import System.Info.Extra as X
 import System.Process as X
-import System.Posix.Process as X
 
 writeLog :: (MonadIO m) => String -> m ()
 writeLog s = liftIO $ hPutStrLn stderr s

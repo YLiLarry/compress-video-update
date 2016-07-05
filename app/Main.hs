@@ -46,8 +46,8 @@ update = do
    appUpdate
    when (optInstall options) $ liftIO $ void $ do
       installer'' <- makeAbsolute installer' 
-      pid <- getProcessID
-      let args = ["--kill", show pid]
+      prog <- getProgName
+      let args = ["--kill", show prog]
       writeLog $ printf "Install with %s" $ showCommandForUser installer'' args
       spawnProcess installer'' args
       
