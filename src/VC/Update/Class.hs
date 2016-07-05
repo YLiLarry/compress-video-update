@@ -25,9 +25,9 @@ data EnvCfg = EnvCfg {
    , installer :: String
    , downloadDir :: FilePath
    , licenseFile :: FilePath
-   , version :: String
    , license :: Maybe String
-   , selfName :: Maybe String
+   , versionFile :: FilePath
+   , version :: Maybe String
    , mainOptions :: Maybe MainOptions
 } deriving (Generic)
 
@@ -45,7 +45,8 @@ instance MaybeData EnvCfg
 
 data MainOptions = MainOptions {
    optCheckOnly :: Bool,
-   optKillProcess :: Maybe String
+   optKillProcess :: Maybe String,
+   optInstall :: Bool
 } deriving (Generic)
 
 instance ToJSON EnvCfg
@@ -61,8 +62,10 @@ instance Options MainOptions where
       pure MainOptions
         <*> simpleOption "check-only" False
             "Check if an update is needed. Exit with 0 if not."
-        <*> simpleOption "kill-thread" Nothing
-            "Kill thread # in order to update."
+        <*> simpleOption "kill" Nothing
+            "Kill process name in order to update."
+        <*> simpleOption "install" False
+            "Run installer after download."
             
 newtype VCUpdate v = VCUpdate {
    unVCUpdate :: StateT EnvCfg IO v

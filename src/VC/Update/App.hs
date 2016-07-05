@@ -5,7 +5,7 @@ import VC.Update.Class
 
 appNeedsUpdate :: VCUpdate Bool
 appNeedsUpdate = do
-   v <- version <$> get
+   v <- (# version) <$> get
    url <- (# releaseVersionURL) <$> get
    v' <- requestS url []
    let bool = fromString v /= v'
@@ -14,11 +14,12 @@ appNeedsUpdate = do
    
 appUpdate :: VCUpdate ()
 appUpdate = do
-   vurl <- (# releaseVersionURL) <$> get
+   env <- get
+   let vurl = env # releaseVersionURL
    version' <- requestS vurl []
-   downloadDir' <- (# downloadDir) <$> get
+   let downloadDir' = env # downloadDir
    writeLog $ printf "Download release.zip (%s) from the server" version'
-   url <- (# releaseDownloadURL) <$> get
+   let url = env # releaseDownloadURL
    zip <- requestLBS url []
    -- writeLog $ printf "Clean old app in %s" downloadDir'
    -- liftIO $ whenM (doesDirectoryExist downloadDir') (removeDirectoryRecursive downloadDir')
@@ -26,6 +27,7 @@ appUpdate = do
    writeLog $ printf "Unzip to %s" downloadDir'
    liftIO $ extractFilesFromArchive [OptDestination downloadDir', OptVerbose] $ toArchive zip
    writeLog $ printf "Update the version number to %s" version'
-   modify (\e -> e {version = version'}) 
+   modify (\e -> e {version = pure version'}) 
+   liftIO $ writeFile (env # versionFile) version'
    writeLog $ printf "Update succeeded."
    

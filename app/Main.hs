@@ -8,16 +8,17 @@ import VC.Update.App
 import Data.SL
 import System.Exit
 import Options as O
+import Data.List.Extra as L
 
 main :: IO ()
 main = O.runCommand $ \opts configPath -> do 
    env' <- load $ head configPath
-   license' <- readFile $ licenseFile env'
-   progName <- getProgName
+   license' <- L.trim <$> (readFile $ licenseFile env')
+   version' <- L.trim <$> (readFile $ versionFile env')
    let env = env' {
       mainOptions = pure opts,
       license = pure license',
-      selfName = pure progName
+      version = pure version'
    }
    flip runVCUpdate env $
       if | optCheckOnly opts -> checkOnly
@@ -40,9 +41,8 @@ update = do
          then callCommand $ printf "taskkill /pid /t %d" $ fromJust pid
          else callCommand $ printf "pkill -P %d" $ fromJust pid
    appUpdate
-   when (isJust $ optKillProcess options) $ liftIO $ void $ do
+   when (optInstall options) $ liftIO $ void $ do
       installer'' <- makeAbsolute installer' 
-      spawnProcess installer'' ["--kill", env # selfName]
+      progName <- getProgName
+      spawnProcess installer'' ["--kill", progName]
       
-   
-   

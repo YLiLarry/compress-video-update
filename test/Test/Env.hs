@@ -11,11 +11,11 @@ testEnvCfg = EnvCfg {
    , releaseVersionURL     = "http://localhost:8000/api/release/version"
    , releaseDownloadURL    = "http://localhost:8000/api/release/download"
    , presetDir = "./test/tmp/cfgs/"
-   , downloadDir = "./test/tmp/app/"
-   , installer = "compress-video"
-   , licenseFile = "./test/LICENSE"
+   , downloadDir = "./test/tmp/update"
+   , installer = "./test/tmp/update/installer"
+   , licenseFile = "./test/tmp/LICENSE"
+   , versionFile = "./test/tmp/VERSION"
    , license = Just "test"
-   , version = "current"
-   , selfName = Nothing
+   , version = Just "current"
    , mainOptions = Just defaultOptions
 }
