@@ -15,7 +15,7 @@ main = O.runCommand $ \opts configPath -> do
    env' <- load $ head configPath
    license' <- L.trim <$> (readFile $ licenseFile env')
    version' <- L.trim <$> (readFile $ versionFile env')
-   print version'
+   writeLog $ printf "Current version: %s" version'
    let env = env' {
       mainOptions = pure opts,
       license = pure license',
