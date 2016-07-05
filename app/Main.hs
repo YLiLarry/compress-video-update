@@ -8,12 +8,18 @@ import VC.Update.App
 import Data.SL
 import System.Exit
 import Options as O
+import Data.List.Extra as L
 
 main :: IO ()
 main = O.runCommand $ \opts configPath -> do 
    env' <- load $ head configPath
+   license' <- L.trim <$> (readFile $ licenseFile env')
+   version' <- L.trim <$> (readFile $ versionFile env')
+   writeLog $ printf "Current version: %s" version'
    let env = env' {
-      mainOptions = opts
+      mainOptions = pure opts,
+      license = pure license',
+      version = pure version'
    }
    flip runVCUpdate env $
       if | optCheckOnly opts -> checkOnly
@@ -27,16 +33,21 @@ checkOnly = do
       
 update :: VCUpdate ()
 update = do
-   options <- mainOptions <$> get
-   appName' <- appName <$> get
-   let pid = optKillThread options 
-   when (isJust pid) $ liftIO $
-      if isWindows 
-         then callCommand $ printf "taskkill /pid /t %d" $ fromJust pid
-         else callCommand $ printf "pkill -P %d" $ fromJust pid
+   env <- get
+   let options = mainOptions ? env
+   let installer' = installer ? env
+   let pid = optKillProcess options 
+   when (isJust pid) $ liftIO $ do
+      let cmd = if isWindows 
+                  then printf "taskkill /pid /t %d" $ fromJust pid
+                  else printf "kill -15 %d" $ fromJust pid
+      writeLog $ printf "Shutdown UI with %s" cmd
+      callCommand cmd
    appUpdate
-   when (optLaunchApp options) $ liftIO $
-      callCommand appName'
+   when (optInstall options) $ liftIO $ void $ do
+      installer'' <- makeAbsolute installer' 
+      pid <- getProcessID
+      let args = ["--kill", show pid]
+      writeLog $ printf "Install with %s" $ showCommandForUser installer'' args
+      spawnProcess installer'' args
       
-   
-   

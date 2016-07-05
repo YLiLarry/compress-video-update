@@ -1,6 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
@@ -16,24 +17,36 @@ import Data.SL
 import Options
 
 data EnvCfg = EnvCfg {
-     serverConfigFingerprintURL :: String
-   , serverConfigDirectoryURL :: String
-   , serverReleaseVersionURL :: String
-   , serverReleaseDownloadURL :: String
-   , localConfigDirectoryURL :: String
-   , appDir :: FilePath
-   , version :: String
-   , activation :: String
-   , envCfg :: FilePath
-   , mainOptions :: MainOptions
-   , appName :: String
+     presetFingerprintURL :: String
+   , presetCollectionURL :: String
+   , releaseVersionURL :: String
+   , releaseDownloadURL :: String
+   , presetDir :: String
+   , installer :: String
+   , downloadDir :: FilePath
+   , licenseFile :: FilePath
+   , license :: Maybe String
+   , versionFile :: FilePath
+   , version :: Maybe String
+   , mainOptions :: Maybe MainOptions
 } deriving (Generic)
 
+class MaybeData a
+class (MaybeData a) => Selector a f c where
+   (#) :: a -> f -> c
+   (?) :: f -> a -> c
+   (?) = flip (#)
+   
+instance (MaybeData a) => Selector a (a -> Maybe b) b where
+   a # f = fromJust $ f a
+instance (MaybeData a) => Selector a (a -> b) b where
+   a # f = f a
+instance MaybeData EnvCfg
 
 data MainOptions = MainOptions {
    optCheckOnly :: Bool,
-   optKillThread :: Maybe Int,
-   optLaunchApp :: Bool
+   optKillProcess :: Maybe Integer,
+   optInstall :: Bool
 } deriving (Generic)
 
 instance ToJSON EnvCfg
@@ -49,16 +62,11 @@ instance Options MainOptions where
       pure MainOptions
         <*> simpleOption "check-only" False
             "Check if an update is needed. Exit with 0 if not."
-        <*> simpleOption "kill-thread" Nothing
-            "Kill thread # in order to update."
-        <*> simpleOption "launch-app" False
-            "Launch the app after update."
+        <*> simpleOption "kill" Nothing
+            "Kill process name in order to update."
+        <*> simpleOption "install" False
+            "Run installer after download."
             
-saveEnvCfg :: VCUpdate ()
-saveEnvCfg = do
-   env <- get 
-   save env $ envCfg env
-
 newtype VCUpdate v = VCUpdate {
    unVCUpdate :: StateT EnvCfg IO v
 }
@@ -75,11 +83,11 @@ deriving instance MonadState EnvCfg VCUpdate
 
 request :: String -> [(S.ByteString, S.ByteString)] -> VCUpdate Request
 request url inputs = do
-   code <- activation <$> get
+   code <- license <$> get
    return
       $ setRequestBodyURLEncoded inputs
       $ setRequestMethod "POST"
-      $ setRequestQueryString [("activation", Just $ fromString code)]
+      $ setRequestQueryString [("activation", fromString <$> code)]
       $ fromString url
       
 requestLBS :: String -> [(S.ByteString, S.ByteString)] -> VCUpdate L.ByteString

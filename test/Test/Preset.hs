@@ -10,10 +10,10 @@ test :: IO ()
 test = hspec $ do
    describe "Update user config files from the server." $ do
       it "updateAll" $ do
-         createDirectoryIfMissing True $ localConfigDirectoryURL testEnvCfg
+         createDirectoryIfMissing True $ presetDir testEnvCfg
          runVCUpdate updateAll testEnvCfg
-         content <- readFile $ localConfigDirectoryURL testEnvCfg ++ "测试.cfg"
+         content <- readFile $ presetDir testEnvCfg ++ "测试.cfg"
          content `shouldBe` "test-content"
-         removeDirectoryRecursive $ localConfigDirectoryURL testEnvCfg
+         removeDirectoryRecursive $ presetDir testEnvCfg
          
          

@@ -7,7 +7,9 @@ import Control.Monad.Extra as X
 import Data.Monoid as X
 import Data.String as X
 import System.IO as X
+-- import System.EasyFile as X
 import System.Directory as X
+import System.Environment as X
 import Network.HTTP.Simple as X
 import Text.Printf as X
 import Codec.Archive.Zip as X
@@ -15,6 +17,7 @@ import Control.Monad.Extra as X
 import Data.Maybe as X
 import System.Info.Extra as X
 import System.Process as X
+import System.Posix.Process as X
 
 writeLog :: (MonadIO m) => String -> m ()
 writeLog s = liftIO $ hPutStrLn stderr s
