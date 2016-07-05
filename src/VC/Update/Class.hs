@@ -45,7 +45,7 @@ instance MaybeData EnvCfg
 
 data MainOptions = MainOptions {
    optCheckOnly :: Bool,
-   optKillProcess :: Maybe String,
+   optKillProcess :: Maybe Integer,
    optInstall :: Bool
 } deriving (Generic)
 

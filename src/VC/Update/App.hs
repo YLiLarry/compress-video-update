@@ -25,7 +25,7 @@ appUpdate = do
    -- liftIO $ whenM (doesDirectoryExist downloadDir') (removeDirectoryRecursive downloadDir')
    liftIO $ createDirectoryIfMissing True downloadDir'
    writeLog $ printf "Unzip to %s" downloadDir'
-   liftIO $ extractFilesFromArchive [OptDestination downloadDir', OptVerbose] $ toArchive zip
+   liftIO $ extractFilesFromArchive [OptDestination downloadDir'] $ toArchive zip
    writeLog $ printf "Update the version number to %s" version'
    modify (\e -> e {version = pure version'}) 
    liftIO $ writeFile (env # versionFile) version'
